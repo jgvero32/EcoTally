@@ -3,13 +3,18 @@
 // Connect with the Express server
 const addRecordEndpoint = 'http://localhost:50000/postData';
 
-export default async function postRecord(location) {
+export default async function postRecord(usage) {
   /* Pass the POST API request from React to Express server */
   // - - - - - - - START - - - - - - - -
   const recordBodyParameters = {
-    'country': location.country,
-    'state': location.state,
-    'city': location.city
+    'toilet': usage.toilet,
+    'dishes': usage.dishes,
+    'shower': usage.shower,
+    'laundry': usage.laundry,
+    'gas': usage.gas,
+    'trash': usage.trash,
+    'electricity': usage.electricity,
+    'fuel': usage.fuel,
   }
 
   const options = {
