@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ReactDOM from 'react-dom'
 import './App.css';
 import LoadingSpinner from './components/spinner.js';
 import UsageSetter from './components/UsageSetter.js';
@@ -26,6 +27,7 @@ function App() {
   };
 
   const submit = async () => {
+    get();
     setLoading(true);
     let usage = {
       toilet: toilet || 0,
@@ -45,9 +47,22 @@ function App() {
   const get = async () => {
     setLoading(true);
     let response = await getRecords();
+    // console.log(response);
     let usageArray = [];
     response.records.forEach((record, index) => {
-      usageArray.push(<li key={index}>{record.toilet.value}, {record.dishes.value}, {record.shower.value}, {record.laundry.value}, {record.gas.value}, {record.trash.value}, {record.electricity.value}, {record.fuel.value},</li>);
+      usageArray.push([
+        +record.toilet.value,
+        +record.dishes.value,
+        +record.shower.value,
+        +record.laundry.value,
+        +record.gas.value,
+        +record.trash.value,
+        +record.electricity.value,
+        +record.fuel.value,
+      ])
+      console.log(index);
+
+
     });
     setRecords(usageArray);
     setLoading(false);
@@ -56,12 +71,83 @@ function App() {
 
   //Ron Stuff
 
+
+
+  const styles = {
+    '*': {
+      fontFamily: 'serif',
+    },
+    batteryContainer: {
+      fontSize: '24px',
+      lineHeight: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    battery: {
+      marginBottom: '20px', /* Increased margin-bottom */
+      position: 'relative', /* Added position relative for percentage alignment */
+    },
+    segmentContainer: {
+      display: 'flex',
+      //flexDirection: 'column-reverse', /* Change to column-reverse to make segments vertical */
+      alignItems: 'center',
+    },
+    segment: {
+      display: 'inline-block',
+      width: '20px',
+      height: '20px',
+      border: '1px solid #000',
+      margin: '2px 0',
+    },
+    filled: {
+      backgroundColor: '#0f0', /* Green color for filled segments */
+    },
+    exceeded: {
+      backgroundColor: '#f00', /* Red color for exceeded segments */
+    },
+    empty: {
+      backgroundColor: '#fff', /* White color for empty segments */
+    },
+    percentage: {
+      position: 'absolute',
+      bottom: '-25px', /* Adjust as needed */
+      left: '50%',
+      transform: 'translateX(-50%)',
+    },
+    addBatteryButton: {
+      marginTop: '20px', /* Add margin between the last battery and the add button */
+      border: '2px solid lightblue', /* Add a light blue border */
+      padding: '10px 20px', /* Add some padding for better appearance */
+      cursor: 'pointer', /* Change the cursor to a pointer when hovering over the button */
+      transition: 'background-color 0.3s ease', /* Smooth transition for background color change */
+    },
+    addBatteryButtonHover: {
+      backgroundColor: 'lightblue', /* Change the background color on hover */
+    },
+  };
+
   let batteryCount = 4; // Starting with 4 batteries
 
-  function drawBattery(displayId, goalId, consumedId) {
+  
+  // function drawBattery(displayId, goalId, consumedId) {
+function drawBattery(displayId, goalId, records1) {
+  let goal = parseInt(document.getElementById(goalId).value);
+      // if (!Array.isArray(records1) || records1.length === 0) {
+      //   console.error('Invalid records array');
+      //   return;
+      // }
+    
+      let sum = 0;
+      console.log(records1.length);
+      for (let i = 0; i < records1.length; i++) {
+        for (let j = 0; j < 8; j++) {
+          sum += records1[i][j];
+        }
+      }
 
-    let goal = parseInt(document.getElementById(goalId).value);
-    let consumed = parseInt(document.getElementById(consumedId).value);
+
+    let consumed = sum;
 
     // Set default values to 0 if user input is empty
     goal = isNaN(goal) ? 0 : goal;
@@ -87,15 +173,14 @@ function App() {
 
 
   let batteryHTML = `<div>Goal: ${goal}</div><div class='segment-container'>`;
+
   for (let i = 0; i < 10; i++) {
-    //batteryHTML += `<div class="segment ${i < filledSegments ? segmentClass : 'empty'}"></div>`;
-    batteryHTML += (
-      <div className={`segment ${i < filledSegments ? segmentClass : 'empty'}`}></div>
-    );
+    batteryHTML += `<div class="segment ${i < filledSegments ? segmentClass : 'empty'}"></div>`;
   }
   batteryHTML += `</div><div class="percentage">${percentage.toFixed(2)}%</div>`; // Added percentage div
 
   document.getElementById(displayId).innerHTML = batteryHTML;
+  
 }
 
         function addBatteryInput() {
@@ -119,70 +204,13 @@ function App() {
         }
 
 
-        const styles = {
-          '*': {
-            fontFamily: 'serif',
-          },
-          batteryContainer: {
-            fontSize: '24px',
-            lineHeight: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          },
-          battery: {
-            marginBottom: '20px', /* Increased margin-bottom */
-            position: 'relative', /* Added position relative for percentage alignment */
-          },
-          segmentContainer: {
-            display: 'flex',
-            //flexDirection: 'column-reverse', /* Change to column-reverse to make segments vertical */
-            alignItems: 'center',
-          },
-          segment: {
-            display: 'inline-block',
-            width: '20px',
-            height: '20px',
-            border: '1px solid #000',
-            margin: '2px 0',
-          },
-          filled: {
-            backgroundColor: '#0f0', /* Green color for filled segments */
-          },
-          exceeded: {
-            backgroundColor: '#f00', /* Red color for exceeded segments */
-          },
-          empty: {
-            backgroundColor: '#fff', /* White color for empty segments */
-          },
-          percentage: {
-            position: 'absolute',
-            bottom: '-25px', /* Adjust as needed */
-            left: '50%',
-            transform: 'translateX(-50%)',
-          },
-          addBatteryButton: {
-            marginTop: '20px', /* Add margin between the last battery and the add button */
-            border: '2px solid lightblue', /* Add a light blue border */
-            padding: '10px 20px', /* Add some padding for better appearance */
-            cursor: 'pointer', /* Change the cursor to a pointer when hovering over the button */
-            transition: 'background-color 0.3s ease', /* Smooth transition for background color change */
-          },
-          addBatteryButtonHover: {
-            backgroundColor: 'lightblue', /* Change the background color on hover */
-          },
-        };
   //Ron Stuff End
     
 
   return (
     <div className="main">
       <h1>EcoTally</h1>
-      {loading && (
-        <div className="loadingDiv">
-          <LoadingSpinner />
-        </div>
-      )}
+      <body>
 
     <div className={`panel ${panelActive ? 'active' : ''}`}>
         <div className="selectDiv">
@@ -205,10 +233,7 @@ function App() {
         </div>
         <div className="submitDiv">
           <button onClick={submit} disabled={loading ? true : false}>
-            Submit!
-          </button>
-          <button onClick={get} disabled={loading ? true : false}>
-            Get!
+          <span> Submit! </span>
           </button>
         </div>
     </div>
@@ -218,35 +243,31 @@ function App() {
       <div className="battery-container">
         {/* Electricity Consumption Battery */}
         <div style={styles.batteryContainer}>
-          <h2>Electricity</h2>
-          <label htmlFor="data1">Enter your electricity consumption limit for today: </label>
+          <h2>Waste Tracker</h2>
+          <label htmlFor="data1">Enter your total consumption limit for today: </label>
           <input type="number" id="data1" min="0" max="100" />
-          <br />
-          <label htmlFor="data1a">Enter the total amount of electricity used today: </label>
-          <input type="number" id="data1a" min="0" max="100" />
-          <br />
+          {loading && (
+        <div className="loadingDiv">
+          <LoadingSpinner />
+        </div>
+      )}
 
-          
 
-
-          <button onClick={() => drawBattery('batteryDisplay1', 'data1', 'data1a')}>Generate Tally</button>
+          <button onClick={() => drawBattery('batteryDisplay1', 'data1', records)}><span>Generate Tally</span></button>
           <div id="batteryDisplay1" className="battery"></div>
                 
                 
           {/* Add Battery Button */}
-          <button className="add-battery-button" onClick={addBatteryInput}>Add Another Tally</button>
+          <button className="add-battery-button" onClick={addBatteryInput}><span>Add Another Tally</span></button>
 
 
 
           </div>
       </div>
     </div>
-     
-    <div className="listRecordsDiv">
-        <ul>{records}</ul>
-  </div>
 
-      <button onClick={togglePanel}>Add Data</button>
+      <button onClick={togglePanel}><span>Add Data</span></button>
+      </body>
     </div>
   );
 }
