@@ -5,6 +5,9 @@ import UsageSetter from './components/UsageSetter.js';
 import getRecords from './requests/getRecords.js';
 import postRecord from './requests/postRecord.js';
 
+
+
+
 function App() {
   const [loading, setLoading] = useState(false);
   const [panelActive, setPanelActive] = useState(false);
@@ -50,15 +53,138 @@ function App() {
     setLoading(false);
   };
 
+
+  //Ron Stuff
+
+  let batteryCount = 4; // Starting with 4 batteries
+
+  function drawBattery(displayId, goalId, consumedId) {
+
+    let goal = parseInt(document.getElementById(goalId).value);
+    let consumed = parseInt(document.getElementById(consumedId).value);
+
+    // Set default values to 0 if user input is empty
+    goal = isNaN(goal) ? 0 : goal;
+    consumed = isNaN(consumed) ? 0 : consumed;
+
+    const percentage = (consumed / goal) * 100;
+
+
+
+    let filledSegments;
+    if (percentage > 100) {
+        filledSegments = 10; // If percentage exceeds 100%, fill all segments
+    } else {
+        filledSegments = Math.ceil((percentage / 100) * 10);
+    }
+
+    let segmentClass;
+      if (percentage > 100) {
+        segmentClass = 'exceeded'; // Use exceeded class if percentage exceeds 100%
+      } else {
+        segmentClass = 'filled';
+      }
+
+
+  let batteryHTML = `<div>Goal: ${goal}</div><div class='segment-container'>`;
+  for (let i = 0; i < 10; i++) {
+    //batteryHTML += `<div class="segment ${i < filledSegments ? segmentClass : 'empty'}"></div>`;
+    batteryHTML += (
+      <div className={`segment ${i < filledSegments ? segmentClass : 'empty'}`}></div>
+    );
+  }
+  batteryHTML += `</div><div class="percentage">${percentage.toFixed(2)}%</div>`; // Added percentage div
+
+  document.getElementById(displayId).innerHTML = batteryHTML;
+}
+
+        function addBatteryInput() {
+            batteryCount++;
+            const batteryTitle = prompt("What do you want to conserve today?"); // Prompt for the battery title
+            if (batteryTitle) {
+                const batteryHTML = `
+                    <h2>${batteryTitle}</h2>
+                    <label for="data${batteryCount}">Enter your ${batteryTitle.toLowerCase()} consumption goal for today: </label>
+                    <input type="number" id="data${batteryCount}" min="0" max="100">
+                    <br>
+                    <label for="data${batteryCount}a">Enter the total amount for ${batteryTitle.toLowerCase()} used today: </label>
+                    <input type="number" id="data${batteryCount}a" min="0" max="100">
+                    <br>
+                    <button onclick="drawBattery('batteryDisplay${batteryCount}', 'data${batteryCount}', 'data${batteryCount}a')">Generate Tally</button>
+                    <div id="batteryDisplay${batteryCount}" class="battery"></div>
+                `;
+                const addBatteryButton = document.querySelector('.add-battery-button');
+                addBatteryButton.insertAdjacentHTML('beforebegin', batteryHTML); // Insert new battery input before the add button
+            }
+        }
+
+
+        const styles = {
+          '*': {
+            fontFamily: 'serif',
+          },
+          batteryContainer: {
+            fontSize: '24px',
+            lineHeight: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          },
+          battery: {
+            marginBottom: '20px', /* Increased margin-bottom */
+            position: 'relative', /* Added position relative for percentage alignment */
+          },
+          segmentContainer: {
+            display: 'flex',
+            //flexDirection: 'column-reverse', /* Change to column-reverse to make segments vertical */
+            alignItems: 'center',
+          },
+          segment: {
+            display: 'inline-block',
+            width: '20px',
+            height: '20px',
+            border: '1px solid #000',
+            margin: '2px 0',
+          },
+          filled: {
+            backgroundColor: '#0f0', /* Green color for filled segments */
+          },
+          exceeded: {
+            backgroundColor: '#f00', /* Red color for exceeded segments */
+          },
+          empty: {
+            backgroundColor: '#fff', /* White color for empty segments */
+          },
+          percentage: {
+            position: 'absolute',
+            bottom: '-25px', /* Adjust as needed */
+            left: '50%',
+            transform: 'translateX(-50%)',
+          },
+          addBatteryButton: {
+            marginTop: '20px', /* Add margin between the last battery and the add button */
+            border: '2px solid lightblue', /* Add a light blue border */
+            padding: '10px 20px', /* Add some padding for better appearance */
+            cursor: 'pointer', /* Change the cursor to a pointer when hovering over the button */
+            transition: 'background-color 0.3s ease', /* Smooth transition for background color change */
+          },
+          addBatteryButtonHover: {
+            backgroundColor: 'lightblue', /* Change the background color on hover */
+          },
+        };
+  //Ron Stuff End
+    
+
   return (
     <div className="main">
-      <h2>EcoTally</h2>
+      <h1>EcoTally</h1>
       {loading && (
         <div className="loadingDiv">
           <LoadingSpinner />
         </div>
       )}
-      <div className={`panel ${panelActive ? 'active' : ''}`}>
+
+    <div className={`panel ${panelActive ? 'active' : ''}`}>
         <div className="selectDiv">
           <p>Enter your toilet flushes</p>
           <UsageSetter usage={toilet} setUsage={setToilet}/>
@@ -85,11 +211,42 @@ function App() {
             Get!
           </button>
         </div>
+    </div>
+      
+
+    <div>
+      <div className="battery-container">
+        {/* Electricity Consumption Battery */}
+        <div style={styles.batteryContainer}>
+          <h2>Electricity</h2>
+          <label htmlFor="data1">Enter your electricity consumption limit for today: </label>
+          <input type="number" id="data1" min="0" max="100" />
+          <br />
+          <label htmlFor="data1a">Enter the total amount of electricity used today: </label>
+          <input type="number" id="data1a" min="0" max="100" />
+          <br />
+
+          
+
+
+          <button onClick={() => drawBattery('batteryDisplay1', 'data1', 'data1a')}>Generate Tally</button>
+          <div id="batteryDisplay1" className="battery"></div>
+                
+                
+          {/* Add Battery Button */}
+          <button className="add-battery-button" onClick={addBatteryInput}>Add Another Tally</button>
+
+
+
+          </div>
       </div>
-      <div className="listRecordsDiv">
+    </div>
+     
+    <div className="listRecordsDiv">
         <ul>{records}</ul>
-      </div>
-      <button onClick={togglePanel}>Toggle Panel</button>
+  </div>
+
+      <button onClick={togglePanel}>Add Data</button>
     </div>
   );
 }
